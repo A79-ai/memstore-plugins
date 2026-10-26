@@ -1,0 +1,34 @@
+name: Bug report
+description: Something in the plugin or memstore-client doesn't work
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: status
+    attributes:
+      label: /memstore:status output
+      description: Run `/memstore:status` (or `memstore-client doctor`) and paste it. Remove anything private.
+      render: text
+  - type: dropdown
+    id: host
+    attributes:
+      label: Agent
+      options: [Claude Code, Cursor, Codex, Other]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versions
+      description: "`memstore-client --version`, and the plugin version from `/plugin`"
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options: [macOS (Apple Silicon), Linux arm64, Linux x86_64, Other]

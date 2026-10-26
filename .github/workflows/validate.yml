@@ -1,0 +1,53 @@
+name: Validate
+
+# The manifests parse and name what exists, the shell scripts pass shellcheck, and install.sh installs the latest
+# release on macOS and Linux as the plugin would.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JSON parses
+        run: |
+          find . -name '*.json' -not -path './.git/*' -print0 | xargs -0 -n1 jq empty
+      - name: Each marketplace's plugin exists
+        run: |
+          for m in .claude-plugin/marketplace.json .cursor-plugin/marketplace.json; do
+            for src in $(jq -r '.plugins[].source | if type == "string" then . else .path end' "$m"); do
+              test -d "$src" || { echo "$m names $src, which doesn't exist"; exit 1; }
+            done
+          done
+          test -d "$(jq -r '.plugins[0].source.path' .agents/plugins/marketplace.json)"
+      - name: Shellcheck
+        run: shellcheck install.sh plugins/memstore/bin/install.sh plugins/memstore/bin/memstore-client
+
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-14, ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the latest release
+        env:
+          MEMSTORE_INSTALL_DIR: ${{ runner.temp }}/bin
+        run: |
+          sh install.sh
+          "$MEMSTORE_INSTALL_DIR/memstore-client" --version
+      - name: The plugin's launcher finds it and stays quiet in a hook
+        env:
+          MEMSTORE_INSTALL_DIR: ${{ runner.temp }}/bin
+        run: |
+          plugins/memstore/bin/memstore-client --version
+          echo '{}' | plugins/memstore/bin/memstore-client hook pre-tool

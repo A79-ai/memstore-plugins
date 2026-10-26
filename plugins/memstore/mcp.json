@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "memstore": {
+      "type": "streamable-http",
+      "url": "https://memstore-api-dev.a79dev.com/mcp"
+    }
+  }
+}
