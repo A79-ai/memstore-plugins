@@ -37,7 +37,27 @@ install() {
   return $status
 }
 
+# Keeps the client current, in the background, at most once a day: where the latest release isn't the one
+# installed (`memstore-client --version` names it), installs it. A pinned MEMSTORE_VERSION, or
+# MEMSTORE_CLIENT_UPDATE=off, leaves it as it is.
+update() {
+  [ -z "${MEMSTORE_VERSION:-}" ] && [ "${MEMSTORE_CLIENT_UPDATE:-on}" != off ] || return 0
+  mkdir -p "$cache" && chmod 700 "$cache" || return 0
+  stamp=$cache/update-checked
+  [ -z "$(find "$stamp" -mmin -1440 2>/dev/null)" ] || return 0
+  : >"$stamp"
+  repo=${MEMSTORE_CLIENT_REPO:-A79-ai/memstore-plugins}
+  latest=$(curl -fsSI --max-time 10 "https://github.com/$repo/releases/latest" 2>/dev/null |
+    tr -d '\r' | sed -n 's#^[Ll]ocation: .*/releases/tag/##p')
+  [ -n "$latest" ] || return 0
+  [ "$("$1" --version 2>/dev/null | cut -d' ' -f2)" = "$latest" ] && return 0
+  MEMSTORE_VERSION=$latest install
+}
+
 bin=$(find_bin)
+if [ -n "$bin" ] && [ "$1 $2" = "hook session-start" ]; then
+  (update "$bin" </dev/null >/dev/null 2>&1 &)
+fi
 if [ -z "$bin" ]; then
   case "$1 $2" in
     "hook session-start")
