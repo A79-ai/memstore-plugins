@@ -1,7 +1,7 @@
 #!/bin/sh
-# What the plugin runs for every hook, its MCP server and its commands: memstore-client where it is installed
-# (memstore where only that is), and where neither is, it installs memstore-client from the public releases
-# (bin/install.sh) and runs that.
+# What the plugin runs for every hook, its MCP server and its commands: memstore-client where it is installed, and
+# where it isn't, it installs it from the public releases (bin/install.sh) and runs that. Never a full `memstore` on
+# the PATH instead: that one is whatever its owner last built or installed, often older than the plugin.
 #
 # Never in the person's way: a hook with nothing installed doesn't wait for a download. A session's start installs
 # in the background and says once that the memory is on from the next session; the other hooks do nothing. The MCP
@@ -20,7 +20,6 @@ find_bin() {
     # Not this script, which is on PATH as memstore-client where the host adds the plugin's bin/.
     [ -n "$b" ] && [ -x "$b" ] && [ "$(cd "$(dirname "$b")" && pwd)" != "$here" ] && { echo "$b"; return; }
   done
-  command -v memstore 2>/dev/null
 }
 
 install() {

@@ -58,7 +58,7 @@ macOS on Apple Silicon and Linux on arm64 or x86_64), are published in the publi
 
 You don't install the binary yourself. Everything the plugin runs goes through
 [`bin/memstore-client`](bin/memstore-client), which runs `memstore-client` from `~/.local/bin` or your `PATH`
-(`memstore` where only that is installed). Where neither is installed, it installs it from the public releases,
+(never a full `memstore` instead, which may be older than the plugin). Where it isn't installed, it installs it from the public releases,
 checking its checksum ([`bin/install.sh`](bin/install.sh)). A session's start installs it in the background and
 tells Claude to say once that memory is on from the next session. The other hooks do nothing until then, so a turn
 never waits on a download. The MCP server and the commands install it first and then run.
