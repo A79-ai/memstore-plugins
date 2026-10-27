@@ -65,7 +65,10 @@ tells Claude to say once that memory is on from the next session. The other hook
 never waits on a download. The MCP server and the commands install it first and then run.
 
 `/memstore:login` signs in through the browser once (`memstore-client join`), and the CLI renews the sign-in. With no
-arguments it signs in to `MEMSTORE_URL` and `MEMSTORE_ORG`. An organization can set those for everyone, together with
+arguments it signs in to `MEMSTORE_URL` and `MEMSTORE_ORG`, and with neither set, to the ampup org on its server. Someone
+the org doesn't hold yet (not invited, not admitted by their email domain) asks to join it by signing in: the org's
+admins are emailed a link that approves them (or they run `memstore requests` and `memstore invite`), and the next
+`/memstore:login` gets in. An organization can set the server and org for everyone, together with
 the plugin itself, in Claude Code's managed settings:
 
 ```json
