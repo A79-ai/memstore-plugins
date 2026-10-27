@@ -9,8 +9,9 @@
 #
 #   memstore-client <args>   as memstore-client would run them
 #   memstore-client login [<server>] [--org <org>]
-#                            signs in: the server and org default to MEMSTORE_URL and MEMSTORE_ORG, else to
-#                            the ampup org on its server. Not a member of the org yet: asks to join it, and
+#                            signs in as you (Google, a password): the server defaults to MEMSTORE_URL, else
+#                            ampup's; the org to MEMSTORE_ORG, else the one org holding you (several: name
+#                            one; none: name the one to ask to join). Not a member of the org yet: asks to join it, and
 #                            its admins are emailed to approve
 here=$(cd "$(dirname "$0")" && pwd)
 dir=${MEMSTORE_INSTALL_DIR:-$HOME/.local/bin}
@@ -80,13 +81,16 @@ fi
 if [ "$1" = login ]; then
   shift
   # Unless told otherwise (an argument, or MEMSTORE_URL and MEMSTORE_ORG set for everyone in managed
-  # settings), a plugin install joins the ampup org on its server.
+  # settings), a plugin install signs in to ampup's server as yourself: the org is the one holding you, or
+  # the one you name (--org) to ask to join.
   server=${MEMSTORE_URL:-https://memstore-api-dev.a79dev.com}
-  org=${MEMSTORE_ORG:-ampup}
   case "$1" in http*) server=$1; shift ;; esac
   case " $* " in
     *" --org "*) exec "$bin" join "$server" "$@" ;;
   esac
-  exec "$bin" join "$server" --org "$org" "$@"
+  if [ -n "${MEMSTORE_ORG:-}" ]; then
+    exec "$bin" join "$server" --org "$MEMSTORE_ORG" "$@"
+  fi
+  exec "$bin" join "$server" "$@"
 fi
 exec "$bin" "$@"
