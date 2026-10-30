@@ -107,7 +107,7 @@ MEMSTORE_EXTRACT_GOAL_BLIND=1 OPENROUTER_API_KEY=... memstore serve --local
 | `MEMSTORE_ORG` | the CLI context's org | The org, with `MEMSTORE_URL`. |
 | `MEMSTORE_TOKEN` | the CLI's sign-in to that server | A bearer token to send to `MEMSTORE_URL` instead (an API key, for CI); ignored without `MEMSTORE_URL`. |
 | `MEMSTORE_SCOPE` | the team's | `mine` keeps sessions, notes and recall in your own memory, which only you can read. |
-| `MEMSTORE_CAPTURE` | on | Set it to `off` to stop sessions being remembered, and to end them without their trace. Advice and recall still work. |
+| `MEMSTORE_CAPTURE` | on | Set it to `off` to stop sessions being remembered: no trace when they end, and the server keeps nothing you say in them as your memory (from 0.4.6). Advice and recall still work. |
 | `MEMSTORE_RECALL` | first prompt | `every` recalls facts on every prompt. Advice comes on the first prompt only. |
 | `MEMSTORE_INSTALL_DIR` | `~/.local/bin` | Where the plugin looks for `memstore-client` and installs it. |
 | `MEMSTORE_CLIENT_UPDATE` | on | Once a day a session's start checks, in the background, whether a newer `memstore-client` was released and installs it. `off` keeps the one installed; a set `MEMSTORE_VERSION` pins it. |
