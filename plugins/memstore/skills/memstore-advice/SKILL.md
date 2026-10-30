@@ -1,6 +1,6 @@
 ---
 name: memstore-advice
-description: Run each conversation as a memstore session so the team memory can advise on the task and learn whether its advice helped. Use whenever the memstore tools start_session, get_advice or end_session are available, at the start of a task-oriented conversation, when the task changes, and when the conversation ends.
+description: Run each conversation as a memstore session so the team memory can advise on the task and learn whether its advice helped. Use whenever the memstore tools start_session, get_advice or end_session are available, at the start of a task-oriented conversation, when you need help, when a step finishes and you move to the next, and when the conversation ends.
 ---
 
 # memstore advice, over a session
@@ -26,16 +26,19 @@ session and will end it. Use the `session_id` it gives, skip step 1, and leave s
    the org's documents. Its evidence line says how often it has helped before. Advice with no evidence yet is a
    candidate, so check its steps against the data before relying on them. The memstore `skills` tool, where it
    is offered, lists every skill the memory has learned.
-3. **Ask at the moments that matter, not after every step.** Call `get_advice` with the `session_id`, the
+3. **Ask whenever it would help, and at each step boundary.** Call `get_advice` with the `session_id`, the
    task as `question`, a few lines of `conversation_so_far`, and the `moment`:
    - `start` (the default): before substantive work. Orient first (find the files, read what's there), then
      ask before you write, edit or answer. Ask again with `start` when the user moves to a different kind of
      task.
+   - `next`: a step is finished (the file is written, the test passes, the question answered) and you are moving
+     to the next. Pass the next step as `question`. A finished step is the cheapest time to learn what the
+     steps ahead usually trip on. If the next step is a different kind of task, it routes it afresh.
    - `fork`: choosing between approaches, or about to change something shared or hard to undo.
-   - `stuck`: the same error came back, or the approach isn't converging.
+   - `stuck`: you need help: the same error came back, the approach isn't converging, or you are unsure.
    - `done`: about to declare the task finished. Save the result first (write the file, commit).
 
-   A later moment re-reads the advice the session was given, so it is quick. If it has nothing, carry on.
+   A later moment re-reads the advice the session was given with no model call, so asking often is cheap. If it has nothing, carry on.
 4. **End.** When the conversation is over (the user is done, or the task is finished or abandoned), call
    `end_session` with the `session_id` and:
    - `transcript`: a condensed account of what was asked and what you did, including the tool calls that
