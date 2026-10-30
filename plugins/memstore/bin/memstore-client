@@ -40,14 +40,21 @@ install() {
   return $status
 }
 
-# Keeps the client current, in the background, at most once a day: where the latest release isn't the one
-# installed (`memstore-client --version` names it), installs it. A pinned MEMSTORE_VERSION, or
+# A client from v0.1.7 on keeps itself current (hourly at a session's start, and before every sign-in), so this
+# launcher checks only for one older than that, which can't: its first update brings one that can.
+selfupdates() {
+  "$1" update --help >/dev/null 2>&1
+}
+
+# Keeps an older client current: where the latest release isn't the one installed (`memstore-client --version`
+# names it), installs it. With a number, at most once in that many minutes (a session's start, in the background,
+# hourly); without, every time (a sign-in, which waits for it). A pinned MEMSTORE_VERSION, or
 # MEMSTORE_CLIENT_UPDATE=off, leaves it as it is.
 update() {
   [ -z "${MEMSTORE_VERSION:-}" ] && [ "${MEMSTORE_CLIENT_UPDATE:-on}" != off ] || return 0
   mkdir -p "$cache" && chmod 700 "$cache" || return 0
   stamp=$cache/update-checked
-  [ -z "$(find "$stamp" -mmin -1440 2>/dev/null)" ] || return 0
+  [ -z "$2" ] || [ -z "$(find "$stamp" -mmin -"$2" 2>/dev/null)" ] || return 0
   : >"$stamp"
   repo=${MEMSTORE_CLIENT_REPO:-A79-ai/memstore-plugins}
   latest=$(curl -fsSI --max-time 10 "https://github.com/$repo/releases/latest" 2>/dev/null |
@@ -58,8 +65,8 @@ update() {
 }
 
 bin=$(find_bin)
-if [ -n "$bin" ] && [ "$1 $2" = "hook session-start" ]; then
-  (update "$bin" </dev/null >/dev/null 2>&1 &)
+if [ -n "$bin" ] && [ "$1 $2" = "hook session-start" ] && ! selfupdates "$bin"; then
+  (update "$bin" 60 </dev/null >/dev/null 2>&1 &)
 fi
 if [ -z "$bin" ]; then
   case "$1 $2" in
@@ -80,6 +87,10 @@ fi
 
 if [ "$1" = login ]; then
   shift
+  selfupdates "$bin" || {
+    update "$bin" </dev/null >/dev/null 2>&1
+    bin=$(find_bin)
+  }
   # Unless told otherwise (an argument, or MEMSTORE_URL and MEMSTORE_ORG set for everyone in managed
   # settings), a plugin install signs in to ampup's server as yourself: the org is the one holding you, or
   # the one you name (--org) to ask to join.
